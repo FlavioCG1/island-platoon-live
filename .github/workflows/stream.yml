@@ -7,13 +7,18 @@ jobs:
   stream:
     runs-on: ubuntu-latest
     timeout-minutes: 360
+    permissions:
+      contents: read
     steps:
       - name: Install ffmpeg
         run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
 
       - name: Download loop file
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          curl -L -o loop.mp4 "https://github.com/FlavioCG1/island-platoon-live/releases/download/loop-v1/island_platoon_loop_ep1-3.mp4"
+          gh release download loop-v1 --pattern 'island_platoon_loop_ep1-3.mp4' --repo FlavioCG1/island-platoon-live
+          mv island_platoon_loop_ep1-3.mp4 loop.mp4
           ls -la loop.mp4
           ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1 loop.mp4
 
