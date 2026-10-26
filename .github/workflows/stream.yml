@@ -1,0 +1,25 @@
+name: Island Platoon Marathon loop
+
+on:
+  workflow_dispatch:
+
+jobs:
+  stream:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - name: Install ffmpeg
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
+
+      - name: Download loop file
+        run: |
+          curl -L -o loop.mp4 "https://github.com/FlavioCG1/island-platoon-live/releases/download/loop-v1/island_platoon_loop_ep1-3.mp4"
+          ls -la loop.mp4
+          ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1 loop.mp4
+
+      - name: Stream loop to YouTube
+        run: |
+          ffmpeg -re -stream_loop -1 -i loop.mp4 \
+            -c:v libx264 -preset veryfast -maxrate 3000k -bufsize 6000k \
+            -pix_fmt yuv420p -g 60 -c:a aac -b:a 160k -ar 44100 \
+            -f flv "rtmp://a.rtmp.youtube.com/live2/${{ secrets.YT_STREAM_KEY }}"
